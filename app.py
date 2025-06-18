@@ -205,7 +205,6 @@ if uploaded_file:
                 showlegend=False
             ))
 
-            # Add annotation for the reference line label, offset to the right
             fig.add_annotation(
                 x=x2_orig + 50,  
                 y=y2_orig,
@@ -217,13 +216,22 @@ if uploaded_file:
                 bordercolor="blue",
                 borderwidth=1
             )
-
+        
             # Draw window bounding boxes
+            total_area_m2 = 0  # Initialize total area
+
             for i, cnt in enumerate(contours):
                 x, y, w, h = cv2.boundingRect(cnt)
                 width_cm = round(w / pixels_per_cm, 1)
                 height_cm = round(h / pixels_per_cm, 1)
-                hover_text = f"Window/Door {i+1}<br>W: {width_cm} cm<br>H: {height_cm} cm"
+                area_m2 = round((width_cm * height_cm) / 10000, 2)  # Area in m²
+                total_area_m2 += area_m2  # Accumulate total area
+                hover_text = (
+                    f"Window/Door {i+1}<br>"
+                    f"W: {width_cm} cm<br>"
+                    f"H: {height_cm} cm<br>"
+                    f"Area: {area_m2} m²"
+                )
                 fig.add_trace(go.Scatter(
                     x=[x, x + w, x + w, x, x],
                     y=[y, y, y + h, y + h, y],
@@ -259,3 +267,7 @@ if uploaded_file:
             # Plot without resizing
             st.plotly_chart(fig, use_container_width=False)
 
+            st.markdown(
+            f"**Total window/door area:** <span style='color:limegreen;font-size:1.3em'>{total_area_m2:.2f} m²</span>",
+            unsafe_allow_html=True
+)
